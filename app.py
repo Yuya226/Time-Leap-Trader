@@ -14,6 +14,7 @@ from domain.trading import calculate_portfolio_value, execute_buy, execute_sell
 from domain.calculations import calculate_price_change, prepare_display_data
 from ui.sidebar import (
     render_control_sidebar,
+    render_display_period_selector,
     render_date_info_sidebar,
     render_trading_sidebar,
     render_equipment_sidebar,
@@ -154,15 +155,30 @@ if "db_conn" not in st.session_state:
     st.session_state.db_conn = init_db()
 
 # ============================================================================
-# データ取得
+# データ取得（キャッシュ化）
 # ============================================================================
+@st.cache_data
+def fetch_stock_data(ticker: str, year: int, days_before_start: int = 220):
+    """
+    株価データを取得する（キャッシュ化）
+
+    Args:
+        ticker: ティッカーシンボル
+        year: 取得する年
+        days_before_start: 開始日の何日前から取得するか
+
+    Returns:
+        Tuple[DataFrame, start_date, end_date]: (データ, 開始日, 終了日)
+    """
+    data_fetcher = StockDataFetcher()
+    return data_fetcher.fetch_data(ticker, year, days_before_start=days_before_start)
+
 ticker = "7203.T"
 year = 2024
 
 if st.session_state.stock_data is None:
     with st.spinner("データを取得中..."):
-        data_fetcher = StockDataFetcher()
-        data, start_date, end_date = data_fetcher.fetch_data(ticker, year, days_before_start=220)
+        data, start_date, end_date = fetch_stock_data(ticker, year, days_before_start=220)
 
         if data is not None:
             st.session_state.stock_data = data
@@ -185,8 +201,13 @@ if st.session_state.stock_data is not None and st.session_state.current_date is 
     start_date = st.session_state.start_date
     end_date = st.session_state.end_date
 
+    # ========================================================================
+    # サイドバー: 表示期間選択
+    # ========================================================================
+    display_business_days = render_display_period_selector()
+
     # 表示データの準備（純粋関数）
-    display_data, sma_calc_data = prepare_display_data(data, current_date, start_date, context_days=60)
+    display_data, sma_calc_data = prepare_display_data(data, current_date, start_date, display_business_days=display_business_days)
 
     # ========================================================================
     # サイドバー: コントロール

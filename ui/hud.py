@@ -91,3 +91,4 @@ def render_metrics(
         st.metric("高値", f"¥{high:,.0f}")
     with col4:
         st.metric("安値", f"¥{low:,.0f}")
+

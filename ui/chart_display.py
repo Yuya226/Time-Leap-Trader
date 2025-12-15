@@ -58,3 +58,4 @@ def render_chart(
     # データテーブル（オプション）
     with st.expander("表示中のデータを確認", expanded=False):
         st.dataframe(display_data.loc[:, ['Open', 'High', 'Low', 'Close', 'Volume']].tail(10), use_container_width=True)
+

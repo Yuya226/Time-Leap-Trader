@@ -30,27 +30,39 @@ def prepare_display_data(
     data: pd.DataFrame,
     current_date,
     start_date,
-    context_days: int = 60
+    display_business_days: int = 60
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     表示用データとSMA計算用データを準備する（純粋関数）
+    スライディングウィンドウ方式で、最新から指定営業日数分のデータを表示する
 
     Args:
         data: 全データ（DataFrame）
-        current_date: 現在の日付
-        start_date: 開始日
-        context_days: コンテキスト表示日数（デフォルト: 60日）
+        current_date: 現在のトレード日
+        start_date: ゲームの開始日（参考用、未使用）
+        display_business_days: 表示したい営業日数（デフォルト: 60日）
+                             最新から数えてこの日数分のデータを表示
 
     Returns:
         Tuple[pd.DataFrame, pd.DataFrame]: (表示用データ, SMA計算用データ)
     """
-    from datetime import timedelta
+    # ステップ1: 現在のトレード日までのデータ全体を取得
+    available_data = data[data.index.date <= current_date]
 
-    context_start_date = start_date - timedelta(days=context_days)
-    display_data = data[
-        (data.index.date >= context_start_date) &
-        (data.index.date <= current_date)
-    ]
+    if len(available_data) == 0:
+        return pd.DataFrame(), pd.DataFrame()
+
+    # ステップ2: 最新から数えて display_business_days 分のデータを切り出す
+    if len(available_data) <= display_business_days:
+        # データが指定日数より少ない場合は全て表示
+        display_data = available_data
+    else:
+        # 最新から display_business_days 分だけを取得（スライディングウィンドウ）
+        # インデックスは時系列順なので、最後の display_business_days 行を取得
+        display_data = available_data.iloc[-display_business_days:]
+
+    # ステップ3: SMA計算用データ（現在の日付までの全データ）
+    # SMA計算には過去のデータも必要なので、全期間のデータを返す
     sma_calc_data = data[data.index.date <= current_date]
 
     return display_data, sma_calc_data
@@ -77,3 +89,5 @@ def calculate_sma_for_display(
     sma_75 = sma_75_full[sma_75_full.index.isin(display_data.index)]
 
     return sma_25, sma_75
+
+

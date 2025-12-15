@@ -47,6 +47,32 @@ def render_control_sidebar(
     return None
 
 
+def render_display_period_selector() -> int:
+    """
+    表示期間選択をサイドバーに描画
+
+    Returns:
+        int: 選択された営業日数
+    """
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("**📊 表示期間**")
+
+    period_options = {
+        "3ヶ月（約60営業日）": 60,
+        "6ヶ月（約120営業日）": 120,
+        "1年（約250営業日）": 250
+    }
+
+    selected_period = st.sidebar.selectbox(
+        "表示する期間を選択",
+        options=list(period_options.keys()),
+        index=0,  # デフォルトは3ヶ月
+        key="display_period_selector"
+    )
+
+    return period_options[selected_period]
+
+
 def render_date_info_sidebar(
     current_date: date,
     start_date: date,
@@ -170,3 +196,4 @@ def render_debug_sidebar() -> bool:
     if st.sidebar.button("強制レベルアップ (+100EXP)", use_container_width=True):
         return True
     return False
+
