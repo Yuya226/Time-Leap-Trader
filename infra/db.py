@@ -15,7 +15,7 @@ class DatabaseRepository:
 
     def _init_db(self):
         """データベースとテーブルを初期化"""
-        conn = sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path, check_same_thread=False)
         c = conn.cursor()
 
         # 経験値とレベルのテーブルを作成
@@ -39,7 +39,7 @@ class DatabaseRepository:
 
     def get_connection(self) -> sqlite3.Connection:
         """データベース接続を取得"""
-        return sqlite3.connect(self.db_path)
+        return sqlite3.connect(self.db_path, check_same_thread=False)
 
     def get_player_stats(self) -> Dict[str, int]:
         """プレイヤーの経験値とレベルを取得"""

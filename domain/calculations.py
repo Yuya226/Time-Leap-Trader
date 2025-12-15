@@ -91,3 +91,4 @@ def calculate_sma_for_display(
     return sma_25, sma_75
 
 
+
